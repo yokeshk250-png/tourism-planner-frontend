@@ -1,54 +1,47 @@
-import { ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Slot, useRouter, useSegments } from 'expo-router';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '../services/firebase';
-
-function useProtectedRoute(user: User | null) {
-  const segments = useSegments();
-  const router = useRouter();
-
-  useEffect(() => {
-    const inAuthGroup = segments[0] === '(auth)';
-
-    if (!user && !inAuthGroup) {
-      // Redirect to login if not authenticated and not in auth group
-      router.replace('/(auth)/login');
-    } else if (user && inAuthGroup) {
-      // Redirect to main app if authenticated and in auth group
-      router.replace('/(tabs)');
-    }
-  }, [user, segments, router]);
-}
 
 export default function RootLayout() {
   const [user, setUser] = useState<User | null>(null);
   const [initializing, setInitializing] = useState(true);
+  const segments = useSegments();
+  const router = useRouter();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      if (initializing) setInitializing(false);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      setInitializing(false);
     });
-
     return unsubscribe;
-  }, [initializing]);
+  }, []);
 
-  useProtectedRoute(user);
+  useEffect(() => {
+    // Don't navigate until Firebase has resolved the initial auth state
+    // and the layout is ready (not initializing)
+    if (initializing) return;
 
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (!user && !inAuthGroup) {
+      router.replace('/(auth)/login');
+    } else if (user && inAuthGroup) {
+      router.replace('/(tabs)/plan');
+    }
+  }, [user, segments, initializing]);
+
+  // Show spinner while Firebase resolves auth state
   if (initializing) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8f9ff' }}>
         <ActivityIndicator size="large" color="#4F46E5" />
       </View>
     );
   }
 
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-    </Stack>
-  );
+  // Slot renders whatever child route is active
+  // This must be rendered before any navigation calls
+  return <Slot />;
 }
