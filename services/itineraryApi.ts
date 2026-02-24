@@ -1,15 +1,10 @@
 import { getApiClient } from './apiClient';
 
-// Budget level type
 export type BudgetLevel = 'low' | 'medium' | 'high';
-
-// Travel type type
 export type TravelType = 'solo' | 'couple' | 'family' | 'group';
-
-// Trip mood type
 export type TripMood = 'relaxed' | 'adventure' | 'spiritual' | 'romantic' | 'cultural' | 'foodie';
+export type SlotName = 'morning' | 'afternoon' | 'evening' | 'night';
 
-// Trip request interface for generating itinerary
 export interface TripRequest {
   destination: string;
   days: number;
@@ -22,11 +17,10 @@ export interface TripRequest {
   accessibility_needs: boolean;
 }
 
-// Scheduled stop interface - a place in the itinerary
 export interface ScheduledStop {
   day: number;
   slot_id: string;
-  slot_name: 'morning' | 'afternoon' | 'evening' | 'night';
+  slot_name: SlotName;
   start_time: string;
   end_time: string;
   place_name: string;
@@ -37,8 +31,8 @@ export interface ScheduledStop {
   closed_on?: string[] | null;
   entry_fee?: number | null;
   entry_fee_foreign?: number | null;
-  tip?: string | null;
   nearby_food?: string | null;
+  tip?: string | null;
   lat?: number | null;
   lon?: number | null;
   is_alternate: boolean;
@@ -49,11 +43,10 @@ export interface ScheduledStop {
   checked_out?: boolean;
 }
 
-// Time slot interface
 export interface TimeSlot {
   slot_id: string;
   day: number;
-  slot_name: string;
+  slot_name: SlotName;
   start_time: string;
   end_time: string;
   available_mins: number;
@@ -61,7 +54,6 @@ export interface TimeSlot {
   meal_gap_after?: string | null;
 }
 
-// Itinerary metadata
 export interface ItineraryMeta {
   destination: string;
   days: number;
@@ -75,23 +67,22 @@ export interface ItineraryMeta {
   hours_unverified_count: number;
 }
 
-// Itinerary response from generate endpoint
 export interface ItineraryResponse {
   success: boolean;
   meta?: ItineraryMeta;
   slot_template?: TimeSlot[];
   itinerary: ScheduledStop[];
-  unscheduled?: any[];
+  unscheduled?: PlaceCandidate[];
   weather_warnings?: string[] | null;
 }
 
-// Place candidate for suggestions
 export interface PlaceCandidate {
   place_name: string;
   category?: string | null;
-  priority?: number;
+  priority: number;
   duration_hrs: number;
-  best_slot?: string | null;
+  best_slot?: SlotName | null;
+  why_must_visit?: string | null;
   opening_hours?: string | null;
   closed_on?: string[] | null;
   entry_fee?: number | null;
@@ -103,37 +94,49 @@ export interface PlaceCandidate {
   is_alternate?: boolean;
 }
 
-// User rating interface
-export interface UserRating {
-  user_id: string;
-  place_id: string;
-  place_name: string;
-  rating: number;
-  review?: string;
+export interface ValidatePlaceRequest {
+  place: PlaceCandidate;
+  target_day: number;
+  target_slot: SlotName;
+  day_date?: string | null;
+  slot_stops: ScheduledStop[];
+  prev_stop?: ScheduledStop | null;
+  next_stop?: ScheduledStop | null;
+  all_stops: ScheduledStop[];
+  budget?: BudgetLevel;
+  accessibility_needs?: boolean;
 }
 
-// Hotel request types
-export interface HotelPhase {
-  phase: number;
-  days: number[];
-  hotel_name: string;
-  hotel_lat: number;
-  hotel_lon: number;
-  distance_km: number;
-  hotels_list?: any[];
+export interface ValidatePlaceResponse {
+  valid: boolean;
+  place_name: string;
+  target_slot: SlotName;
+  target_day: number;
+  conflicts: ValidationConflict[];
+  warnings: ValidationWarning[];
+  estimated_start?: string | null;
+  estimated_end?: string | null;
+  remaining_mins_in_slot?: number | null;
+}
+
+export interface ValidationConflict {
+  type: string;
+  severity: 'error' | 'warning';
+  message: string;
+  detail: string;
+}
+
+export interface ValidationWarning {
+  type: string;
+  message: string;
+  detail: string;
 }
 
 export interface HotelSuggestRequest {
   destination: string;
   days: number;
-  budget: string;
+  budget?: string;
   itinerary: ScheduledStop[];
-}
-
-export interface HotelSuggestResponse {
-  success: boolean;
-  phases: HotelPhase[];
-  note?: string;
 }
 
 export interface CheckInRequest {
@@ -150,168 +153,73 @@ export interface CheckOutRequest {
   checkout_time: string;
 }
 
-// Suggest alternates request
-export interface SuggestAlternatesRequest {
-  destination: string;
-  slot_name: string;
-  current_stop: ScheduledStop;
-  scheduled_places: ScheduledStop[];
-  free_slots: string[];
-}
-
-export interface SuggestAlternatesResponse {
-  success: boolean;
-  alternates: PlaceCandidate[];
-  count: number;
-}
-
-// Validate place request
-export interface ValidatePlaceRequest {
-  place: PlaceCandidate;
-  target_day: number;
-  target_slot: string;
-  day_date?: string | null;
-  slot_stops: ScheduledStop[];
-  prev_stop?: ScheduledStop | null;
-  next_stop?: ScheduledStop | null;
-  all_stops: ScheduledStop[];
-  budget?: string;
-  accessibility_needs?: boolean;
-}
-
-export interface ValidationConflict {
-  type: string;
-  severity: 'error' | 'warning';
-  message: string;
-  detail: string;
-}
-
-export interface ValidatePlaceResponse {
-  valid: boolean;
-  place_name: string;
-  target_slot: string;
-  target_day: number;
-  conflicts: ValidationConflict[];
-  warnings: ValidationConflict[];
-  estimated_start?: string | null;
-  estimated_end?: string | null;
-  remaining_mins_in_slot?: number | null;
-}
-
-// Saved itinerary from backend
-export interface SavedItinerary {
-  id: string;
+export interface UserRating {
   user_id: string;
-  itinerary: ItineraryResponse;
-  created_at: string;
-  updated_at: string;
+  place_id: string;
+  place_name: string;
+  rating: number;
+  review?: string;
 }
 
 // API Functions
-
-/**
- * Generate a new itinerary
- */
 export async function generateItinerary(req: TripRequest): Promise<ItineraryResponse> {
   const { data } = await getApiClient().post<ItineraryResponse>('/api/itinerary/generate', req);
   return data;
 }
 
-/**
- * Suggest alternate places for swapping
- */
-export async function suggestAlternates(req: SuggestAlternatesRequest): Promise<SuggestAlternatesResponse> {
-  const { data } = await getApiClient().post<SuggestAlternatesResponse>('/api/itinerary/suggest', req);
+export async function suggestAlternates(payload: {
+  destination: string;
+  slot_name: SlotName;
+  current_stop: ScheduledStop;
+  scheduled_places: ScheduledStop[];
+  free_slots: SlotName[];
+}) {
+  const { data } = await getApiClient().post('/api/itinerary/suggest', payload);
   return data;
 }
 
-/**
- * Validate if a place can fit in a slot
- */
-export async function validatePlace(req: ValidatePlaceRequest): Promise<ValidatePlaceResponse> {
-  const { data } = await getApiClient().post<ValidatePlaceResponse>('/api/itinerary/validate-place', req);
+export async function validatePlace(payload: ValidatePlaceRequest): Promise<ValidatePlaceResponse> {
+  const { data } = await getApiClient().post<ValidatePlaceResponse>('/api/itinerary/validate-place', payload);
   return data;
 }
 
-/**
- * Save itinerary to backend
- */
-export async function saveUserItinerary(userId: string, itinerary: ItineraryResponse): Promise<{ success: boolean; itinerary_id: string }> {
-  const { data } = await getApiClient().post('/api/itinerary/save', 
-    { itinerary, saved_at: new Date().toISOString() },
-    { params: { user_id: userId } }
-  );
-  return data;
+export async function saveUserItinerary(userId: string, itinerary: ItineraryResponse) {
+  const { data } = await getApiClient().post('/api/itinerary/save', { itinerary }, { params: { user_id: userId } });
+  return data as { success: boolean; itinerary_id: string };
 }
 
-/**
- * Update existing itinerary
- */
-export async function updateItinerary(itineraryId: string, patch: { itinerary: ScheduledStop[] }): Promise<{ success: boolean; itinerary_id: string; updated: boolean }> {
+export async function updateItinerary(itineraryId: string, patch: { itinerary: ScheduledStop[] }) {
   const { data } = await getApiClient().patch(`/api/itinerary/update/${itineraryId}`, patch);
-  return data;
+  return data as { success: boolean; itinerary_id: string; updated: boolean };
 }
 
-/**
- * Get all itineraries for a user
- */
-export async function getUserItineraries(userId: string): Promise<{ success: boolean; itineraries: SavedItinerary[]; count: number }> {
+export async function getUserItineraries(userId: string) {
   const { data } = await getApiClient().get(`/api/itinerary/user/${userId}`);
-  return data;
+  return data as { success: boolean; itineraries: any[]; count: number };
 }
 
-/**
- * Get a specific itinerary by ID
- */
-export async function getItinerary(itineraryId: string): Promise<{ success: boolean; itinerary: ItineraryResponse }> {
+export async function getItinerary(itineraryId: string) {
   const { data } = await getApiClient().get(`/api/itinerary/${itineraryId}`);
-  return data;
+  return data as { success: boolean; itinerary: ItineraryResponse };
 }
 
-/**
- * Rate a place
- */
-export async function ratePlace(payload: UserRating): Promise<{ success: boolean; message: string }> {
+export async function ratePlace(payload: UserRating) {
   const { data } = await getApiClient().post('/api/itinerary/rate', payload);
-  return data;
+  return data as { success: boolean; message: string };
 }
 
 // Hotel API Functions
-
-/**
- * Suggest hotels for itinerary phases
- */
-export async function suggestHotels(req: HotelSuggestRequest): Promise<HotelSuggestResponse> {
-  const { data } = await getApiClient().post<HotelSuggestResponse>('/api/hotels/suggest', req);
+export async function suggestHotels(payload: HotelSuggestRequest) {
+  const { data } = await getApiClient().post('/api/hotels/suggest', payload);
   return data;
 }
 
-/**
- * Check in to hotel (replan current day if late)
- */
-export async function checkInHotel(req: CheckInRequest): Promise<any> {
-  const { data } = await getApiClient().post('/api/hotels/checkin', req);
+export async function checkInHotel(payload: CheckInRequest) {
+  const { data } = await getApiClient().post('/api/hotels/checkin', payload);
   return data;
 }
 
-/**
- * Check out from hotel (replan next phase if late)
- */
-export async function checkOutHotel(req: CheckOutRequest): Promise<any> {
-  const { data } = await getApiClient().post('/api/hotels/checkout', req);
+export async function checkOutHotel(payload: CheckOutRequest) {
+  const { data } = await getApiClient().post('/api/hotels/checkout', payload);
   return data;
 }
-
-export default {
-  generateItinerary,
-  suggestAlternates,
-  validatePlace,
-  saveUserItinerary,
-  updateItinerary,
-  getUserItineraries,
-  getItinerary,
-  ratePlace,
-  suggestHotels,
-  checkInHotel,
-  checkOutHotel,
-};
