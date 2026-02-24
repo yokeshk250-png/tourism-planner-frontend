@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "AI Tourism Planner",
+    "slug": "tourism-planner-frontend",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1A237E"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourname.tourismplanner",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We use your location to show nearby attractions.",
+        "NSCameraUsageDescription": "Camera is used for profile photo and check-in photos.",
+        "NSPhotoLibraryUsageDescription": "We access photos for your profile and trip memories."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1A237E"
+      },
+      "package": "com.yourname.tourismplanner",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-location",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share trip memories."
+        }
+      ]
+    ],
+    "scheme": "tourismplanner"
+  }
+}

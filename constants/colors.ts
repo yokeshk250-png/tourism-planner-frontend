@@ -1,0 +1,70 @@
+export const Colors = {
+  primary: '#1A237E',
+  primaryLight: '#3949AB',
+  primaryDark: '#0D1757',
+  secondary: '#FF6F00',
+  secondaryLight: '#FFA040',
+  accent: '#00BCD4',
+  accentLight: '#4DD0E1',
+  success: '#4CAF50',
+  warning: '#FF9800',
+  error: '#F44336',
+  info: '#2196F3',
+  white: '#FFFFFF',
+  black: '#000000',
+  grey: '#9E9E9E',
+  greyLight: '#F5F5F5',
+  greyMedium: '#E0E0E0',
+  greyDark: '#616161',
+  background: '#F8F9FF',
+  card: '#FFFFFF',
+  text: '#1A1A2E',
+  textLight: '#6B7280',
+  textMuted: '#9CA3AF',
+  border: '#E5E7EB',
+  shadow: 'rgba(26, 35, 126, 0.15)',
+  overlay: 'rgba(0,0,0,0.5)',
+  gradients: {
+    primary: ['#1A237E', '#3949AB'],
+    secondary: ['#FF6F00', '#FFA040'],
+    card: ['#FFFFFF', '#F0F4FF'],
+    hero: ['#1A237E', '#0D47A1', '#00BCD4'],
+    success: ['#4CAF50', '#81C784'],
+    checkin: ['#00BCD4', '#26C6DA'],
+    checkout: ['#FF6F00', '#FFA040'],
+  },
+};
+
+export const Fonts = {
+  regular: 'System',
+  medium: 'System',
+  bold: 'System',
+  sizes: {
+    xs: 10,
+    sm: 12,
+    base: 14,
+    md: 16,
+    lg: 18,
+    xl: 20,
+    xxl: 24,
+    xxxl: 28,
+    hero: 32,
+  },
+};
+
+export const Spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
+};
+
+export const BorderRadius = {
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  full: 9999,
+};
